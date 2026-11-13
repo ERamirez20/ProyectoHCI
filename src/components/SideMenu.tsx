@@ -31,7 +31,7 @@ export default function SideMenu({ current, onNavigate, onReset, onClose }: Side
           <div className="drawer-head">
             <div>
               <p className="drawer-title">Mi agenda</p>
-              <p className="drawer-subtitle">Prototipo de demostración</p>
+              <p className="drawer-subtitle">Prototipo · pin y alertas simulados</p>
             </div>
             <button type="button" className="icon-btn" aria-label="Cerrar menú" onClick={onClose}>
               <X size={20} />
@@ -58,7 +58,7 @@ export default function SideMenu({ current, onNavigate, onReset, onClose }: Side
             Restablecer demo
           </button>
 
-          <p className="drawer-foot">Datos de ejemplo guardados solo en este navegador.</p>
+          <p className="drawer-foot">Tus recordatorios se guardan en este navegador.</p>
         </aside>
       </div>
     </div>

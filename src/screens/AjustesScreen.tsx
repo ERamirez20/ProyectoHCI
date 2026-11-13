@@ -201,7 +201,7 @@ export default function AjustesScreen({ settings, pinConnected, onSave, onManage
       >
         Guardar cambios
       </button>
-      <p className="save-hint">{dirty ? 'Tienes cambios sin guardar.' : 'Todo está guardado.'}</p>
+      <p className="save-hint">{dirty ? 'Tenés cambios sin guardar.' : 'Todo está guardado.'}</p>
     </div>
   );
 }

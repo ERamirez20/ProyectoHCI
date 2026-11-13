@@ -9,7 +9,7 @@ const WEEKDAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes
 /** Iniciales de la semana empezando en lunes. */
 export const WEEKDAY_INITIALS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
-const pad2 = (n: number) => String(n).padStart(2, '0');
+export const pad2 = (n: number) => String(n).padStart(2, '0');
 
 export const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -69,6 +69,14 @@ export function longDayLabel(dateStr: string): string {
   const d = parseISODate(dateStr);
   const rel = relativeDay(dateStr);
   return rel ? `${rel}, ${dayAndMonth(d)}` : `${capitalize(WEEKDAYS[d.getDay()])} ${dayAndMonth(d)}`;
+}
+
+/** "Mañana, sábado 14 de noviembre" o "Lunes 16 de noviembre" */
+export function formatFullDate(dateStr: string): string {
+  const d = parseISODate(dateStr);
+  const rel = relativeDay(dateStr);
+  const full = `${WEEKDAYS[d.getDay()]} ${dayAndMonth(d)}`;
+  return rel ? `${rel}, ${full}` : capitalize(full);
 }
 
 /** "Mañana, 8:00 am" */

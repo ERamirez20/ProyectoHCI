@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { Bell, BellOff, CalendarDays, CheckCircle2, ChevronRight, Circle, Send } from 'lucide-react';
 import type { Task, TaskInput } from '../types';
 import { compareTasks, formatTime, formatWhen, longDayLabel } from '../dates';
+import { parseReminder, type AmbiguousTime } from '../parseReminder';
 import Calendar, { type DayMark } from '../components/Calendar';
 import Modal from '../components/Modal';
 import PinStatus from '../components/PinStatus';
@@ -14,10 +15,15 @@ interface AgendaScreenProps {
   pinConnected: boolean;
   selectedDate: string;
   onSelectDate: (date: string) => void;
-  onAdd: (values: TaskInput) => void;
+  onCreate: (values: TaskInput) => Task | null;
   onUpdate: (id: string, patch: Partial<Task>) => void;
   onDelete: (id: string) => void;
   showToast: (text: string) => void;
+}
+
+interface NewTaskDraft {
+  values: TaskInput;
+  ambiguousTime: AmbiguousTime | null;
 }
 
 export default function AgendaScreen({
@@ -26,13 +32,13 @@ export default function AgendaScreen({
   pinConnected,
   selectedDate,
   onSelectDate,
-  onAdd,
+  onCreate,
   onUpdate,
   onDelete,
   showToast,
 }: AgendaScreenProps) {
   const [text, setText] = useState('');
-  const [newTask, setNewTask] = useState<TaskInput | null>(null);
+  const [newTask, setNewTask] = useState<NewTaskDraft | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const editingTask = tasks.find((t) => t.id === editingId) ?? null;
 
@@ -52,15 +58,23 @@ export default function AgendaScreen({
 
   const openNewTask = (e: FormEvent) => {
     e.preventDefault();
-    setNewTask({ title: text.trim(), date: selectedDate, time: '09:00', alarm: true });
+    const parsed = text.trim() ? parseReminder(text) : null;
+    setNewTask({
+      values: {
+        title: parsed?.title ?? '',
+        date: parsed?.date || selectedDate,
+        time: parsed?.time ?? '',
+        alarm: true,
+      },
+      ambiguousTime: parsed?.ambiguousTime ?? null,
+    });
   };
 
   const saveNewTask = (values: TaskInput) => {
-    onAdd(values);
-    onSelectDate(values.date);
+    if (!onCreate(values)) return;
     setText('');
     setNewTask(null);
-    showToast('Tarea agregada');
+    showToast('Recordatorio guardado');
   };
 
   return (
@@ -77,7 +91,7 @@ export default function AgendaScreen({
       ) : (
         <div className="reminder-card is-empty">
           <span className="reminder-title">Sin recordatorios pendientes</span>
-          <span className="reminder-meta">Escribe una tarea abajo para agregarla.</span>
+          <span className="reminder-meta">Escribí o dictá un recordatorio para agregarlo.</span>
         </div>
       )}
 
@@ -148,7 +162,13 @@ export default function AgendaScreen({
 
       {newTask && (
         <Modal title="Nueva tarea" onClose={() => setNewTask(null)}>
-          <TaskForm initial={newTask} submitLabel="Guardar" onSubmit={saveNewTask} onCancel={() => setNewTask(null)} />
+          <TaskForm
+            initial={newTask.values}
+            ambiguousTime={newTask.ambiguousTime}
+            submitLabel="Guardar"
+            onSubmit={saveNewTask}
+            onCancel={() => setNewTask(null)}
+          />
         </Modal>
       )}
 

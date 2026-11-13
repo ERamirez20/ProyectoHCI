@@ -1,7 +1,10 @@
-import type { AlertType, Settings, Task, TaskInput } from './types';
-import { addDays, toISODate, tomorrowISO } from './dates';
+import type { AlertType, Settings, Task } from './types';
+import { addDays, toISODate } from './dates';
 
-export const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+export const newId = (): string =>
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
 export function createSampleTasks(): Task[] {
   const today = new Date();
@@ -14,13 +17,6 @@ export function createSampleTasks(): Task[] {
     { id: 'demo-5', title: 'Regar las plantas', date: day(-2), time: '18:00', done: true, alarm: false },
   ];
 }
-
-export const createDemoProposal = (): TaskInput => ({
-  title: 'Comprar pan',
-  date: tomorrowISO(),
-  time: '08:00',
-  alarm: true,
-});
 
 export const DEFAULT_SETTINGS: Settings = {
   pinSound: true,

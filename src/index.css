@@ -690,6 +690,30 @@ button {
   }
 }
 
+.mic-btn.is-processing {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.mic-btn:disabled {
+  cursor: not-allowed;
+}
+
+.mic-btn:disabled:not(.is-processing) {
+  border-color: #c4c4c4;
+  color: #b0b0b0;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .mic-help {
   margin-top: 6px;
   font-size: 14px;
@@ -697,9 +721,89 @@ button {
   text-align: center;
 }
 
-.demo-note {
-  font-size: 12px;
-  color: #ababab;
+.speech-problem {
+  margin-top: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--orange-soft);
+  border: 1px solid #ffd3c2;
+  border-radius: 12px;
+}
+
+.speech-problem p {
+  display: flex;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: #7a341b;
+}
+
+.speech-problem svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--orange);
+}
+
+.proposal-transcript {
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted-strong);
+  overflow-wrap: anywhere;
+}
+
+.proposal-title.is-live {
+  font-weight: 500;
+  font-style: italic;
+  color: var(--text);
+}
+
+.is-missing {
+  color: var(--orange);
+  font-weight: 500;
+}
+
+.proposal-missing {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--orange-pressed);
+}
+
+.meridiem-choice {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meridiem-question {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.meridiem-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.chip {
+  min-height: 44px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 22px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.chip.is-selected {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
 }
 
 .proposal-card {

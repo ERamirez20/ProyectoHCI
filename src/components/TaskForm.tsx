@@ -1,5 +1,8 @@
 import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import type { TaskInput } from '../types';
+import type { AmbiguousTime } from '../parseReminder';
+import { validateTaskInput } from '../validation';
+import MeridiemChoice from './MeridiemChoice';
 import Toggle from './Toggle';
 
 interface TaskFormProps {
@@ -7,12 +10,22 @@ interface TaskFormProps {
   submitLabel: string;
   onSubmit: (values: TaskInput) => void;
   onCancel: () => void;
+  ambiguousTime?: AmbiguousTime | null;
+  initialError?: string;
   children?: ReactNode;
 }
 
-export default function TaskForm({ initial, submitLabel, onSubmit, onCancel, children }: TaskFormProps) {
+export default function TaskForm({
+  initial,
+  submitLabel,
+  onSubmit,
+  onCancel,
+  ambiguousTime = null,
+  initialError = '',
+  children,
+}: TaskFormProps) {
   const [values, setValues] = useState(initial);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(initialError);
   const submitted = useRef(false);
 
   const set = <K extends keyof TaskInput>(key: K, value: TaskInput[K]) => {
@@ -23,11 +36,10 @@ export default function TaskForm({ initial, submitLabel, onSubmit, onCancel, chi
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (submitted.current) return;
-    const title = values.title.trim();
-    if (!title) return setError('Escribe el nombre de la tarea.');
-    if (!values.date || !values.time) return setError('Elige la fecha y la hora.');
+    const problem = validateTaskInput(values, !!ambiguousTime);
+    if (problem) return setError(problem);
     submitted.current = true;
-    onSubmit({ ...values, title });
+    onSubmit({ ...values, title: values.title.trim() });
   };
 
   return (
@@ -52,6 +64,9 @@ export default function TaskForm({ initial, submitLabel, onSubmit, onCancel, chi
           <input type="time" value={values.time} onChange={(e) => set('time', e.target.value)} />
         </label>
       </div>
+      {ambiguousTime && (
+        <MeridiemChoice ambiguous={ambiguousTime} value={values.time} onPick={(time) => set('time', time)} />
+      )}
       <div className="field-inline">
         <span>Alarma</span>
         <Toggle checked={values.alarm} onChange={(v) => set('alarm', v)} label="Alarma" />

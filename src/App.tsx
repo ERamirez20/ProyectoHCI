@@ -4,6 +4,7 @@ import type { Screen, Settings, Task, TaskInput } from './types';
 import { compareTasks, formatWhen, taskTimestamp, todayISO } from './dates';
 import { DEFAULT_SETTINGS, createSampleTasks, newId } from './data';
 import { STORAGE_KEYS, clearAll, load, save } from './storage';
+import { validateTaskInput } from './validation';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import SideMenu from './components/SideMenu';
@@ -54,8 +55,14 @@ export default function App() {
     return tasks.filter((t) => !t.done && taskTimestamp(t) >= now).sort(compareTasks)[0] ?? null;
   }, [tasks]);
 
-  const addTask = (values: TaskInput) =>
-    setTasks((prev) => [...prev, { ...values, id: newId(), done: false }]);
+  /** Único punto de creación (Agenda y Dictar): valida, asigna id y muestra el día en el calendario. */
+  const createTask = (values: TaskInput): Task | null => {
+    if (validateTaskInput(values)) return null;
+    const task: Task = { ...values, title: values.title.trim(), id: newId(), done: false };
+    setTasks((prev) => [...prev, task]);
+    setSelectedDate(task.date);
+    return task;
+  };
 
   const updateTask = (id: string, patch: Partial<Task>) =>
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
@@ -102,7 +109,7 @@ export default function App() {
             pinConnected={pinConnected}
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
-            onAdd={addTask}
+            onCreate={createTask}
             onUpdate={updateTask}
             onDelete={deleteTask}
             showToast={showToast}
@@ -110,10 +117,9 @@ export default function App() {
         )}
         {screen === 'dictar' && (
           <DictarScreen
-            tasks={tasks}
             nextTask={nextTask}
             pinConnected={pinConnected}
-            onAdd={addTask}
+            onCreate={createTask}
             onUpdate={updateTask}
             onViewInAgenda={(date) => {
               setSelectedDate(date);
@@ -155,9 +161,11 @@ export default function App() {
                 <Bell size={18} />
               </span>
               <div>
-                <p className="notice-title">Recordatorio: {nextTask?.title ?? 'Comprar pan'}</p>
-                <p className="notice-meta">{nextTask ? formatWhen(nextTask) : 'Mañana, 8:00 am'}</p>
-                <span className="demo-tag">Demostración</span>
+                <p className="notice-title">
+                  {nextTask ? `Recordatorio: ${nextTask.title}` : 'Sin recordatorios pendientes'}
+                </p>
+                <p className="notice-meta">{nextTask ? formatWhen(nextTask) : 'No hay avisos próximos'}</p>
+                <span className="demo-tag">Aviso simulado</span>
               </div>
             </li>
             <li className="notice">
@@ -167,10 +175,11 @@ export default function App() {
               <div>
                 <p className="notice-title">Pin sincronizado</p>
                 <p className="notice-meta">Batería al 80% · Hace un momento</p>
-                <span className="demo-tag">Demostración</span>
+                <span className="demo-tag">Aviso simulado</span>
               </div>
             </li>
           </ul>
+          <p className="modal-note">La app muestra estos avisos como vista previa; no envía notificaciones al teléfono.</p>
           <button type="button" className="btn btn-primary btn-block" onClick={closePanel}>
             Entendido
           </button>
@@ -184,8 +193,7 @@ export default function App() {
       {panel === 'reset' && (
         <Modal title="¿Restablecer demo?" onClose={closePanel}>
           <p className="modal-text">
-            Se recuperarán las tareas y configuraciones iniciales. Los cambios hechos durante la demostración se
-            perderán.
+            Se borrarán los recordatorios guardados y se recuperarán las tareas y configuraciones de ejemplo.
           </p>
           <div className="btn-row">
             <button type="button" className="btn btn-secondary" onClick={closePanel}>
